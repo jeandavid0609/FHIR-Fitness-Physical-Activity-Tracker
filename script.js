@@ -30,8 +30,9 @@ async function fetchData() {
     }
 }
 
-// 2. 畫圖表
+// 2. 畫圖表 (含日期與時間)
 async function updateChart(pid) {
+    // 抓取深蹲紀錄，並依照時間排序
     const url = `${FHIR_SERVER_URL}/Observation?patient=${pid}&code=22656-1&_sort=date`;
     const res = await fetch(url, { headers: HEADERS });
     const data = await res.json();
@@ -44,7 +45,15 @@ async function updateChart(pid) {
             const obs = entry.resource;
             if (obs.effectiveDateTime && obs.valueQuantity) {
                 const date = new Date(obs.effectiveDateTime);
-                labels.push(`${date.getHours()}:${date.getMinutes()}`);
+                
+                // --- 修改這裡：加入日期格式 (月/日 時:分) ---
+                const month = date.getMonth() + 1; // 月份是從0開始，所以要+1
+                const day = date.getDate();
+                const hour = date.getHours().toString().padStart(2, '0'); // 補0，變兩位數
+                const min = date.getMinutes().toString().padStart(2, '0'); // 補0
+
+                // 組合字串，例如: "1/2 15:30"
+                labels.push(`${month}/${day} ${hour}:${min}`);
                 values.push(obs.valueQuantity.value);
             }
         });
@@ -56,13 +65,25 @@ async function updateChart(pid) {
     myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: labels, // 這裡現在有日期了
             datasets: [{
                 label: '深蹲次數 (Reps)',
                 data: values,
                 borderColor: 'rgb(255, 99, 132)',
-                tension: 0.1
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                tension: 0.1,
+                fill: true
             }]
+        },
+        options: {
+            scales: {
+                x: {
+                    ticks: {
+                        maxRotation: 45, // 讓日期斜著放，避免擠在一起
+                        minRotation: 45
+                    }
+                }
+            }
         }
     });
 }
