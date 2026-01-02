@@ -38,10 +38,13 @@
                 <div class="card h-100 border-warning">
                     <div class="card-header bg-warning text-dark">2. 上傳運動紀錄 (Observation)</div>
                     <div class="card-body">
-                        <label>輸入深蹲次數:</label>
-                        <div class="input-group">
-                            <input type="number" id="repsInput" class="form-control" placeholder="例如: 20">
-                            <button class="btn btn-warning" onclick="uploadObservation()">📤 上傳 (POST)</button>
+                        <label>輸入紀錄 (次數 / 負重):</label>
+                            <div class="input-group">
+                                <input type="number" id="repsInput" class="form-control" placeholder="次數 (Reps)">
+    
+                                <input type="number" id="weightInput" class="form-control" placeholder="負重 (kg)">
+    
+                                <button class="btn btn-warning" onclick="uploadObservation()">📤 上傳</button>
                         </div>
                     </div>
                 </div>
