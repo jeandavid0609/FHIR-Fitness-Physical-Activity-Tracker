@@ -67,19 +67,23 @@ async function updateChart(pid) {
     });
 }
 
-// 3. 上傳資料
+// 3. 上傳資料 (支援負重)
 async function uploadObservation() {
     const pid = document.getElementById('patientId').value;
     const reps = document.getElementById('repsInput').value;
+    const weight = document.getElementById('weightInput').value; // 取得重量
     
-    if(!reps) return alert("請輸入數字");
+    if(!reps) return alert("請輸入次數");
 
+    // 基本資料結構
     const obsData = {
         resourceType: "Observation",
         status: "final",
         code: { coding: [{ system: "http://loinc.org", code: "22656-1", display: "Squats" }] },
         subject: { reference: `Patient/${pid}` },
         effectiveDateTime: new Date().toISOString(),
+        
+        // 1. 主數值：放次數 (確保圖表能畫)
         valueQuantity: {
             value: Number(reps),
             unit: "reps",
@@ -88,11 +92,32 @@ async function uploadObservation() {
         }
     };
 
+    // 2. 如果使用者有輸入重量，就加入 component
+    if (weight) {
+        obsData.component = [
+            {
+                code: { text: "Weight used" },
+                valueQuantity: {
+                    value: Number(weight),
+                    unit: "kg",
+                    system: "http://unitsofmeasure.org",
+                    code: "kg"
+                }
+            }
+        ];
+    }
+
+    // 發送請求
     await fetch(`${FHIR_SERVER_URL}/Observation`, {
         method: "POST", headers: HEADERS, body: JSON.stringify(obsData)
     });
 
-    alert("上傳成功！");
+    alert(`上傳成功！\n深蹲: ${reps} 下\n負重: ${weight ? weight + " kg" : "無"}`);
+    
+    // 清空輸入框
+    document.getElementById('repsInput').value = '';
+    document.getElementById('weightInput').value = '';
+    
     updateChart(pid);
 }
 
